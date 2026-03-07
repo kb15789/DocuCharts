@@ -91,7 +91,7 @@ async def generate_unique_email(full_name: str) -> str:
         local = "user"
 
     while True:
-        candidate = f"{local}.{uuid4().hex[:8]}@docucharts.local"
+        candidate = f"{local}.{uuid4().hex[:8]}@docucharts.ai"
         existing = await get_user_by_email(candidate)
         if not existing:
             return candidate
