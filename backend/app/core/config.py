@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     openai_api_key: str
     openai_model: str = "gpt-4o-mini"
+    allowed_origins: str = "http://localhost:5173"
 
     access_token_expire_minutes: int = 60 * 24
 
