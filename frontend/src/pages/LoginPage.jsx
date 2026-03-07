@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 export default function LoginPage() {
   const navigate = useNavigate();
   const { handleAuthSuccess } = useAuth();
-  const [formData, setFormData] = useState({ email: "demo@docucharts.ai", password: "Demo@12345" });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
