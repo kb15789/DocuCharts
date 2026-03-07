@@ -6,6 +6,7 @@ import { useAuth } from "./context/AuthContext";
 import ChatbotPage from "./pages/ChatbotPage";
 import DataExplorerPage from "./pages/DataExplorerPage";
 import LoginPage from "./pages/LoginPage";
+import MonitoringPage from "./pages/MonitoringPage";
 import SignupPage from "./pages/SignupPage";
 import UploadPage from "./pages/UploadPage";
 import VisualizationsPage from "./pages/VisualizationsPage";
@@ -35,6 +36,16 @@ export default function App() {
           element={
             user?.chat_assistant_enabled ? (
               <ChatbotPage />
+            ) : (
+              <Navigate to="/upload" replace />
+            )
+          }
+        />
+        <Route
+          path="monitoring"
+          element={
+            user?.monitoring_dashboard_enabled ? (
+              <MonitoringPage />
             ) : (
               <Navigate to="/upload" replace />
             )

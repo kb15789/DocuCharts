@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 export default function SignupPage() {
   const navigate = useNavigate();
   const { handleAuthSuccess } = useAuth();
-  const [formData, setFormData] = useState({ full_name: "", password: "" });
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -37,14 +37,14 @@ export default function SignupPage() {
 
       <form className="auth-card" onSubmit={onSubmit}>
         <h1>Create Account</h1>
-        <p>Start your analytics workspace in a minute. Email is auto-generated.</p>
+        <p>Your login email will be created as username@docucharts.ai.</p>
 
         <label>
-          Full Name
+          Username
           <input
             className="input"
-            value={formData.full_name}
-            onChange={(e) => setFormData((prev) => ({ ...prev, full_name: e.target.value }))}
+            value={formData.username}
+            onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
             required
           />
         </label>

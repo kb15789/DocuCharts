@@ -14,6 +14,7 @@ from app.services.document_service import (
     get_user_documents,
     save_document_metadata,
 )
+from app.services.activity_service import record_user_activity_log
 from app.utils.deps import get_current_user
 
 
@@ -26,6 +27,7 @@ async def upload_documents(
     current_user: dict = Depends(get_current_user),
 ):
     saved = await save_document_metadata(current_user["id"], files)
+    await record_user_activity_log(current_user["id"], "document_upload")
     documents = [DocumentResponse(**doc) for doc in saved]
     return UploadSummaryResponse(uploaded_count=len(documents), documents=documents)
 
@@ -33,6 +35,7 @@ async def upload_documents(
 @router.get("/", response_model=list[DocumentResponse])
 async def fetch_documents(current_user: dict = Depends(get_current_user)):
     docs = await get_user_documents(current_user["id"])
+    await record_user_activity_log(current_user["id"], "documents_list_view")
     return [DocumentResponse(**doc) for doc in docs]
 
 
@@ -44,6 +47,7 @@ async def fetch_document_data(
     data = await get_merged_document_data(
         current_user["id"], [str(doc_id) for doc_id in payload.document_ids]
     )
+    await record_user_activity_log(current_user["id"], "documents_data_view")
     return DocumentDataResponse(**data)
 
 
@@ -55,3 +59,4 @@ async def remove_document(
     deleted = await delete_user_document(current_user["id"], str(document_id))
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+    await record_user_activity_log(current_user["id"], "document_delete")

@@ -9,6 +9,7 @@ const pageMeta = {
   "/explorer": { title: "Data Explorer", subtitle: "Sort, filter, and reorder columns" },
   "/visualizations": { title: "Visualizations", subtitle: "Build charts from your dataset" },
   "/chatbot": { title: "AI Assistant", subtitle: "Ask questions about your uploaded docs" },
+  "/monitoring": { title: "Monitoring Dashboard", subtitle: "Track user login trends and usage" },
 };
 
 export default function Layout() {
