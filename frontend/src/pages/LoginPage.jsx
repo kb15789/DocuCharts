@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { login } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
+import loginHero from "../assets/login-hero.svg";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -27,46 +28,62 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="auth-page">
-      <header className="auth-top">
-        <strong>DocAnalytics</strong>
-        <p>
-          Don&apos;t have an account? <Link to="/signup">Create account</Link>
-        </p>
-      </header>
+    <div className="auth-page auth-page-login">
+      <div className="login-shell">
+        <section className="login-hero">
+          <div className="login-hero-copy">
+            <h1>DocuCharts</h1>
+            <p>Turn Documents into Visual Insights</p>
+          </div>
+          <img src={loginHero} alt="DocuCharts dashboard illustration" />
+        </section>
 
-      <form className="auth-card" onSubmit={onSubmit}>
-        <h1>Welcome Back</h1>
-        <p>Enter your username/email and password to access your dashboard.</p>
+        <section className="login-form-side">
+          <header className="auth-top auth-top-login">
+            <strong className="auth-brand">DocAnalytics</strong>
+            <p>
+              Don&apos;t have an account? <Link to="/signup">Create account</Link>
+            </p>
+          </header>
 
-        <label>
-          Username or Email
-          <input
-            className="input"
-            type="text"
-            value={formData.login}
-            onChange={(e) => setFormData((prev) => ({ ...prev, login: e.target.value }))}
-            required
-          />
-        </label>
+          <div className="auth-login-wrap">
+            <form className="auth-card auth-card-login" onSubmit={onSubmit}>
+              <h1>Welcome back</h1>
+              <p>Enter your credentials to access your dashboard</p>
 
-        <label>
-          Password
-          <input
-            className="input"
-            type="password"
-            value={formData.password}
-            onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
-            required
-          />
-        </label>
+              <label>
+                Username or Email
+                <input
+                  className="input"
+                  type="text"
+                  value={formData.login}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, login: e.target.value }))}
+                  placeholder="name@docucharts.ai or username"
+                  required
+                />
+              </label>
 
-        {error && <p className="error-text">{error}</p>}
+              <label>
+                Password
+                <input
+                  className="input"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                  placeholder="Enter password"
+                  required
+                />
+              </label>
 
-        <button className="primary-btn" type="submit" disabled={submitting}>
-          {submitting ? "Signing in..." : "Sign In"}
-        </button>
-      </form>
+              {error && <p className="error-text">{error}</p>}
+
+              <button className="primary-btn auth-submit" type="submit" disabled={submitting}>
+                {submitting ? "Signing in..." : "Sign In"}
+              </button>
+            </form>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

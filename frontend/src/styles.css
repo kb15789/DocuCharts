@@ -31,6 +31,11 @@
   --icon-btn-bg: #d8e7ff;
   --icon-btn-fg: #0b4bb3;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.8);
+  --auth-page-bg: #f3f5f9;
+  --auth-card-bg: rgba(255, 255, 255, 0.94);
+  --current-response-bg: #eef5ff;
+  --current-response-border: #9cc3ff;
+  --chat-text: var(--text);
   font-family: "Plus Jakarta Sans", sans-serif;
 }
 
@@ -65,6 +70,11 @@
   --icon-btn-bg: #29436b;
   --icon-btn-fg: #d7e7ff;
   --sidebar-footer-bg: rgba(20, 33, 58, 0.9);
+  --auth-page-bg: #0b1220;
+  --auth-card-bg: rgba(17, 26, 43, 0.96);
+  --current-response-bg: #1a2e4f;
+  --current-response-border: #4f82cc;
+  --chat-text: #e5edf9;
 }
 
 * {
@@ -501,20 +511,23 @@ select[multiple] {
   border-radius: 12px;
   padding: 12px;
   background: var(--elevated-bg);
+  color: var(--chat-text);
 }
 
 .current-response {
-  border-color: #9cc3ff;
-  background: #eef5ff;
+  border-color: var(--current-response-border);
+  background: var(--current-response-bg);
 }
 
 .chat-q,
 .chat-a {
   margin: 0;
+  color: var(--chat-text);
 }
 
 .chat-a {
   margin-top: 8px;
+  color: var(--chat-text);
 }
 
 .chat-form {
@@ -529,6 +542,53 @@ select[multiple] {
   padding: 24px;
 }
 
+.auth-page-login {
+  background: var(--auth-page-bg);
+  padding: 0;
+}
+
+.login-shell {
+  min-height: 100vh;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.login-hero {
+  background: linear-gradient(135deg, #dff6ff 0%, #d4dbff 100%);
+  padding: 80px 56px 40px;
+  border-top-right-radius: 28px;
+  border-bottom-right-radius: 28px;
+  display: grid;
+  align-content: space-between;
+  gap: 20px;
+}
+
+.login-hero-copy h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 4.2vw, 4rem);
+  letter-spacing: -0.03em;
+  color: #0e1a34;
+}
+
+.login-hero-copy p {
+  margin: 8px 0 0;
+  font-size: clamp(1.1rem, 1.7vw, 2rem);
+  color: #203459;
+}
+
+.login-hero img {
+  width: min(620px, 100%);
+  justify-self: center;
+}
+
+.login-form-side {
+  position: relative;
+  display: grid;
+  align-content: center;
+  padding: 24px;
+}
+
 .auth-top {
   position: fixed;
   top: 24px;
@@ -537,6 +597,27 @@ select[multiple] {
   display: flex;
   justify-content: space-between;
   color: var(--text-soft);
+}
+
+.auth-top-login {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  right: 24px;
+}
+
+.auth-brand {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.auth-login-wrap {
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding-top: 24px;
 }
 
 .auth-card {
@@ -549,13 +630,42 @@ select[multiple] {
   gap: 12px;
 }
 
+.auth-card-login {
+  background: var(--auth-card-bg);
+  width: min(470px, calc(100vw - 48px));
+  border-radius: 18px;
+  padding: 28px;
+  gap: 14px;
+  box-shadow: 0 14px 38px rgba(15, 31, 72, 0.12);
+}
+
 .auth-card h1 {
   margin: 0;
+  text-align: center;
+  font-size: 2.1rem;
+  letter-spacing: -0.03em;
 }
 
 .auth-card p {
   color: var(--text-soft);
   margin: 0 0 8px;
+  text-align: center;
+}
+
+.auth-card label {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.auth-card .input {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.auth-submit {
+  margin-top: 6px;
+  padding: 12px 14px;
+  font-size: 1rem;
 }
 
 .error-text {
@@ -595,5 +705,22 @@ select[multiple] {
   .monitoring-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .login-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .login-hero {
+    display: none;
+  }
+
+  .login-form-side {
+    min-height: 100vh;
+    padding-top: 78px;
+  }
+
+  .auth-top-login {
+    position: fixed;
   }
 }
