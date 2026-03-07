@@ -7,18 +7,18 @@ import ChatbotPage from "./pages/ChatbotPage";
 import DataExplorerPage from "./pages/DataExplorerPage";
 import LoginPage from "./pages/LoginPage";
 import MonitoringPage from "./pages/MonitoringPage";
+import AboutPage from "./pages/AboutPage";
 import SignupPage from "./pages/SignupPage";
 import UploadPage from "./pages/UploadPage";
 import VisualizationsPage from "./pages/VisualizationsPage";
 
 export default function App() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
-
       <Route
         path="/"
         element={
@@ -31,6 +31,7 @@ export default function App() {
         <Route path="upload" element={<UploadPage />} />
         <Route path="explorer" element={<DataExplorerPage />} />
         <Route path="visualizations" element={<VisualizationsPage />} />
+        <Route path="about" element={<AboutPage />} />
         <Route
           path="chatbot"
           element={
@@ -53,7 +54,7 @@ export default function App() {
         />
       </Route>
 
-      <Route path="*" element={<Navigate to="/upload" replace />} />
+      <Route path="*" element={<Navigate to={isAuthenticated ? "/upload" : "/login"} replace />} />
     </Routes>
   );
 }

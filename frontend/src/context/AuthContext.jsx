@@ -21,11 +21,18 @@ export function AuthProvider({ children }) {
 
   const [user, setUser] = useState(() => {
     const raw = localStorage.getItem("docucharts_user");
-    return raw ? normalizeUser(JSON.parse(raw)) : null;
+    if (!raw) return null;
+    try {
+      return normalizeUser(JSON.parse(raw));
+    } catch {
+      localStorage.removeItem("docucharts_user");
+      return null;
+    }
   });
+  const [authLoading, setAuthLoading] = useState(true);
 
   const token = localStorage.getItem("docucharts_token");
-  const isAuthenticated = Boolean(token && user);
+  const isAuthenticated = Boolean(token);
 
   const logout = useCallback(() => {
     localStorage.removeItem("docucharts_token");
@@ -35,7 +42,10 @@ export function AuthProvider({ children }) {
 
   const syncUserFromServer = useCallback(async () => {
     const existingToken = localStorage.getItem("docucharts_token");
-    if (!existingToken) return;
+    if (!existingToken) {
+      setAuthLoading(false);
+      return;
+    }
 
     try {
       const currentUser = await fetchCurrentUser();
@@ -44,6 +54,8 @@ export function AuthProvider({ children }) {
       setUser(normalized);
     } catch {
       logout();
+    } finally {
+      setAuthLoading(false);
     }
   }, [logout]);
 
@@ -59,8 +71,8 @@ export function AuthProvider({ children }) {
   }
 
   const value = useMemo(
-    () => ({ user, isAuthenticated, handleAuthSuccess, logout, syncUserFromServer }),
-    [user, isAuthenticated, logout, syncUserFromServer]
+    () => ({ user, isAuthenticated, authLoading, handleAuthSuccess, logout, syncUserFromServer }),
+    [user, isAuthenticated, authLoading, logout, syncUserFromServer]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
