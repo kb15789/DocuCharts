@@ -57,8 +57,14 @@ export default function ChatPanel({ selectedDocumentIds }) {
 
       {currentResponse && (
         <div className="chat-item current-response">
-          <p className="chat-q">Current Question: {currentResponse.question}</p>
-          <p className="chat-a">Current Response: {currentResponse.answer}</p>
+          <div className="chat-row chat-row-user">
+            <p className="chat-role">You</p>
+            <p className="chat-bubble">{currentResponse.question}</p>
+          </div>
+          <div className="chat-row chat-row-ai">
+            <p className="chat-role">Assistant</p>
+            <p className="chat-bubble">{currentResponse.answer}</p>
+          </div>
         </div>
       )}
 
@@ -66,30 +72,38 @@ export default function ChatPanel({ selectedDocumentIds }) {
         <div className="chat-history">
           {history.map((item) => (
             <div key={item.id} className="chat-item">
-              <p className="chat-q">You: {item.question}</p>
-              <p className="chat-a">AI: {item.answer}</p>
+              <div className="chat-row chat-row-user">
+                <p className="chat-role">You</p>
+                <p className="chat-bubble">{item.question}</p>
+              </div>
+              <div className="chat-row chat-row-ai">
+                <p className="chat-role">Assistant</p>
+                <p className="chat-bubble">{item.answer}</p>
+              </div>
             </div>
           ))}
-          {!history.length && <p className="table-note">No previous chats yet.</p>}
+          {!history.length && <p className="chat-empty">No previous chats yet.</p>}
         </div>
       )}
 
-      <form className="chat-form" onSubmit={submitQuestion}>
-        <input
-          className="input"
-          value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          placeholder="Ask AI about your selected uploaded documents..."
-          disabled={!selectedDocumentIds.length}
-        />
-        <button className="primary-btn" type="submit" disabled={loading || !selectedDocumentIds.length}>
-          {loading ? "Thinking..." : "Send"}
-        </button>
-      </form>
+      <div className="chat-compose">
+        <form className="chat-form" onSubmit={submitQuestion}>
+          <input
+            className="input"
+            value={question}
+            onChange={(event) => setQuestion(event.target.value)}
+            placeholder="Ask AI about your selected uploaded documents..."
+            disabled={!selectedDocumentIds.length}
+          />
+          <button className="primary-btn" type="submit" disabled={loading || !selectedDocumentIds.length}>
+            {loading ? "Thinking..." : "Send"}
+          </button>
+        </form>
 
-      {!selectedDocumentIds.length && (
-        <p className="table-note">Select at least one document to enable chat.</p>
-      )}
+        {!selectedDocumentIds.length && (
+          <p className="table-note">Select at least one document to enable chat.</p>
+        )}
+      </div>
     </div>
   );
 }

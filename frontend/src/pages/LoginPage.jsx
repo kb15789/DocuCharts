@@ -82,6 +82,10 @@ export default function LoginPage() {
               </button>
             </form>
           </div>
+
+          <footer className="auth-footer">
+            <Link to="/about">About</Link>
+          </footer>
         </section>
       </div>
     </div>

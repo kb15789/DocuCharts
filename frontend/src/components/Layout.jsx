@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 import { pingPresence } from "../api/auth";
 import Sidebar from "./Sidebar";
@@ -78,6 +78,9 @@ export default function Layout() {
         <section className="page-container">
           <Outlet />
         </section>
+        <footer className="app-footer">
+          <Link to="/about">About</Link>
+        </footer>
       </main>
     </div>
   );

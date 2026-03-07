@@ -35,38 +35,44 @@ export default function SignupPage() {
         </p>
       </header>
 
-      <form className="auth-card" onSubmit={onSubmit}>
-        <h1>Create Account</h1>
-        <p>Your login email will be created as username@docucharts.ai.</p>
+      <div className="auth-stack">
+        <form className="auth-card" onSubmit={onSubmit}>
+          <h1>Create Account</h1>
+          <p>Your login email will be created as username@docucharts.ai.</p>
 
-        <label>
-          Username
-          <input
-            className="input"
-            value={formData.username}
-            onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
-            required
-          />
-        </label>
+          <label>
+            Username
+            <input
+              className="input"
+              value={formData.username}
+              onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
+              required
+            />
+          </label>
 
-        <label>
-          Password
-          <input
-            className="input"
-            type="password"
-            value={formData.password}
-            onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
-            required
-            minLength={8}
-          />
-        </label>
+          <label>
+            Password
+            <input
+              className="input"
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+              required
+              minLength={8}
+            />
+          </label>
 
-        {error && <p className="error-text">{error}</p>}
+          {error && <p className="error-text">{error}</p>}
 
-        <button className="primary-btn" type="submit" disabled={submitting}>
-          {submitting ? "Creating..." : "Create Account"}
-        </button>
-      </form>
+          <button className="primary-btn" type="submit" disabled={submitting}>
+            {submitting ? "Creating..." : "Create Account"}
+          </button>
+        </form>
+
+        <footer className="auth-footer">
+          <Link to="/about">About</Link>
+        </footer>
+      </div>
     </div>
   );
 }
