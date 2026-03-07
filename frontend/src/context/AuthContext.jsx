@@ -9,8 +9,13 @@ export function AuthProvider({ children }) {
     if (!rawUser) return null;
     return {
       ...rawUser,
+      is_active: rawUser.is_active === undefined ? true : rawUser.is_active,
       chat_assistant_enabled:
         rawUser.chat_assistant_enabled === undefined ? false : rawUser.chat_assistant_enabled,
+      monitoring_dashboard_enabled:
+        rawUser.monitoring_dashboard_enabled === undefined
+          ? false
+          : rawUser.monitoring_dashboard_enabled,
     };
   }
 

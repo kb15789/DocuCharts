@@ -5,20 +5,23 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class UserSignupRequest(BaseModel):
-    full_name: str = Field(min_length=2, max_length=120)
+    username: str = Field(min_length=3, max_length=40, pattern=r"^[a-zA-Z0-9._-]+$")
     password: str = Field(min_length=8, max_length=128)
 
 
 class UserLoginRequest(BaseModel):
-    email: EmailStr
+    login: str = Field(min_length=3, max_length=120)
     password: str = Field(min_length=8, max_length=128)
 
 
 class UserResponse(BaseModel):
     id: UUID
+    username: str
     full_name: str
     email: EmailStr
+    is_active: bool = True
     chat_assistant_enabled: bool = False
+    monitoring_dashboard_enabled: bool = False
     created_at: datetime
 
 

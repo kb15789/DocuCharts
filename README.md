@@ -75,6 +75,15 @@ DocuCharts/
 - Previous chat history can be shown/hidden in the UI
 - Controlled by `users.chat_assistant_enabled`; when false, chat UI is hidden and chat APIs return 403
 
+6. Monitoring Dashboard
+- Monitoring page with line chart for `unique_users` and `logins`
+- Supports period switch: `day`, `week`, `month`, `year`
+- Visible only when `users.monitoring_dashboard_enabled = true`
+- Includes tabs for:
+  - usage timeline
+  - per-user activity logs
+  - user controls (activate/deactivate + feature flags)
+
 6. Environment Variables
 - Credentials read from `.env` files
 - No credentials hardcoded
@@ -164,7 +173,14 @@ Frontend will run at `http://localhost:5173`.
 - `POST /api/chat/query` (question + selected document IDs, token required)
 - `GET /api/chat/history` (token required)
 
+### Monitoring
+- `GET /api/monitoring/usage?period=day|week|month|year` (token required + monitoring flag enabled)
+
 ## Notes
 - Supabase row-level security is not enabled in this scaffold. Enable RLS policies before production use.
 - File blobs are not stored yet; parsed CSV/XLSX dataset is stored in Supabase for exploration and charting.
 - If you already created tables previously, rerun [`supabase/schema.sql`](./supabase/schema.sql) to apply new `documents`/`chat_history` columns.
+- To enable Monitoring for a user:
+  `update public.users set monitoring_dashboard_enabled = true where email = 'user@example.com';`
+- To deactivate a user account:
+  `update public.users set is_active = false where email = 'user@example.com';`

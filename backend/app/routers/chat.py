@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.models.chat import ChatHistoryItem, ChatQueryRequest, ChatResponse
 from app.services.chat_service import ask_ai, get_chat_history, store_chat_history
+from app.services.activity_service import record_user_activity_log
 from app.utils.deps import get_current_user
 
 
@@ -22,6 +23,7 @@ async def chatbot_query(
     selected_ids = [str(doc_id) for doc_id in payload.document_ids]
     answer = await ask_ai(current_user["id"], payload.question, selected_ids)
     await store_chat_history(current_user["id"], payload.question, answer, selected_ids)
+    await record_user_activity_log(current_user["id"], "chat_query")
     return ChatResponse(answer=answer)
 
 
@@ -34,4 +36,5 @@ async def chat_history(current_user: dict = Depends(get_current_user)):
         )
 
     history = await get_chat_history(current_user["id"])
+    await record_user_activity_log(current_user["id"], "chat_history_view")
     return [ChatHistoryItem(**item) for item in history]

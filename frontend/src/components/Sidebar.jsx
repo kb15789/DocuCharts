@@ -11,9 +11,15 @@ const navItems = [
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
-  const items = user?.chat_assistant_enabled
-    ? [...navItems, { to: "/chatbot", label: "Chat Assistant" }]
-    : navItems;
+  let items = [...navItems];
+
+  if (user?.chat_assistant_enabled) {
+    items = [...items, { to: "/chatbot", label: "Chat Assistant" }];
+  }
+
+  if (user?.monitoring_dashboard_enabled) {
+    items = [...items, { to: "/monitoring", label: "Monitoring" }];
+  }
 
   return (
     <aside className="sidebar">

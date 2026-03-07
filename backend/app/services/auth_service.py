@@ -6,11 +6,39 @@ from app.database.supabase_client import supabase
 from app.utils.security import hash_password, verify_password
 
 
+USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9._-]{3,40}$")
+
+
+def normalize_username(username: str) -> str:
+    return username.strip().lower()
+
+
+def username_to_email(username: str) -> str:
+    return f"{username}@docucharts.ai"
+
+
 async def get_user_by_email(email: str) -> dict[str, Any] | None:
     response = (
         supabase.table("users")
-        .select("id, full_name, email, chat_assistant_enabled, password_hash, created_at")
-        .eq("email", email)
+        .select(
+            "id, username, full_name, email, is_active, chat_assistant_enabled, monitoring_dashboard_enabled, password_hash, created_at"
+        )
+        .eq("email", email.strip().lower())
+        .limit(1)
+        .execute()
+    )
+    if not response.data:
+        return None
+    return response.data[0]
+
+
+async def get_user_by_username(username: str) -> dict[str, Any] | None:
+    response = (
+        supabase.table("users")
+        .select(
+            "id, username, full_name, email, is_active, chat_assistant_enabled, monitoring_dashboard_enabled, password_hash, created_at"
+        )
+        .eq("username", normalize_username(username))
         .limit(1)
         .execute()
     )
@@ -22,7 +50,9 @@ async def get_user_by_email(email: str) -> dict[str, Any] | None:
 async def get_user_by_id(user_id: str) -> dict[str, Any] | None:
     response = (
         supabase.table("users")
-        .select("id, full_name, email, chat_assistant_enabled, created_at")
+        .select(
+            "id, username, full_name, email, is_active, chat_assistant_enabled, monitoring_dashboard_enabled, created_at"
+        )
         .eq("id", user_id)
         .limit(1)
         .execute()
@@ -32,36 +62,27 @@ async def get_user_by_id(user_id: str) -> dict[str, Any] | None:
     return response.data[0]
 
 
-async def create_user(full_name: str, email: str, password: str) -> dict[str, Any]:
+async def create_user(username: str, password: str) -> dict[str, Any]:
+    normalized = normalize_username(username)
+    if not USERNAME_PATTERN.fullmatch(normalized):
+        raise ValueError("Username must be 3-40 chars and contain only letters, numbers, ., _, -")
+
     payload = {
         "id": str(uuid4()),
-        "full_name": full_name,
-        "email": email,
+        "username": normalized,
+        "full_name": normalized,
+        "email": username_to_email(normalized),
         "password_hash": hash_password(password),
+        "is_active": True,
         "chat_assistant_enabled": False,
+        "monitoring_dashboard_enabled": False,
     }
-    response = (
-        supabase.table("users")
-        .insert(payload)
-        .execute()
-    )
+    response = supabase.table("users").insert(payload).execute()
     return response.data[0]
 
 
-async def generate_unique_email(full_name: str) -> str:
-    local = re.sub(r"[^a-z0-9]+", ".", full_name.lower()).strip(".")
-    if not local:
-        local = "user"
-
-    while True:
-        candidate = f"{local}.{uuid4().hex[:8]}@docucharts.ai"
-        existing = await get_user_by_email(candidate)
-        if not existing:
-            return candidate
-
-
-async def authenticate_user(email: str, password: str) -> dict[str, Any] | None:
-    user = await get_user_by_email(email)
+async def authenticate_user(login: str, password: str) -> dict[str, Any] | None:
+    user = await (get_user_by_email(login) if "@" in login else get_user_by_username(login))
     if not user:
         return None
 
@@ -69,3 +90,7 @@ async def authenticate_user(email: str, password: str) -> dict[str, Any] | None:
         return None
 
     return user
+
+
+async def record_login_event(user_id: str) -> None:
+    supabase.table("login_events").insert({"id": str(uuid4()), "user_id": user_id}).execute()

@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 export default function LoginPage() {
   const navigate = useNavigate();
   const { handleAuthSuccess } = useAuth();
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ login: "", password: "" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -37,15 +37,15 @@ export default function LoginPage() {
 
       <form className="auth-card" onSubmit={onSubmit}>
         <h1>Welcome Back</h1>
-        <p>Enter your credentials to access your dashboard.</p>
+        <p>Enter your username/email and password to access your dashboard.</p>
 
         <label>
-          Email
+          Username or Email
           <input
             className="input"
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+            type="text"
+            value={formData.login}
+            onChange={(e) => setFormData((prev) => ({ ...prev, login: e.target.value }))}
             required
           />
         </label>
