@@ -119,6 +119,29 @@ export default function DataTable({ rows, columns: explicitColumns }) {
     setColumnFilters((prev) => ({ ...prev, [columnId]: "__all__" }));
   }
 
+  function toCsvValue(value) {
+    const text = String(value ?? "");
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+
+  function handleDownloadCsv() {
+    if (!filteredRows.length || !orderedVisibleColumns.length) return;
+
+    const header = orderedVisibleColumns.map(toCsvValue).join(",");
+    const body = filteredRows
+      .map((row) => orderedVisibleColumns.map((col) => toCsvValue(row[col])).join(","))
+      .join("\n");
+    const csv = `${header}\n${body}`;
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "data-explorer-export.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="card">
       <div
@@ -211,6 +234,14 @@ export default function DataTable({ rows, columns: explicitColumns }) {
               disabled={!hiddenColumns.length || !columnToAdd}
             >
               Add
+            </button>
+            <button
+              type="button"
+              className="ghost-btn"
+              onClick={handleDownloadCsv}
+              disabled={!filteredRows.length}
+            >
+              Download CSV
             </button>
           </div>
         </div>
