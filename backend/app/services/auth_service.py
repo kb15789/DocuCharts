@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
@@ -94,3 +95,16 @@ async def authenticate_user(login: str, password: str) -> dict[str, Any] | None:
 
 async def record_login_event(user_id: str) -> None:
     supabase.table("login_events").insert({"id": str(uuid4()), "user_id": user_id}).execute()
+
+
+async def upsert_user_presence(
+    user_id: str,
+    country_code: str | None = None,
+    timezone_name: str | None = None,
+) -> None:
+    payload = {"user_id": user_id, "last_seen_at": datetime.now(timezone.utc).isoformat()}
+    if country_code:
+        payload["country_code"] = country_code.upper()
+    if timezone_name:
+        payload["timezone"] = timezone_name
+    supabase.table("user_presence").upsert(payload, on_conflict="user_id").execute()

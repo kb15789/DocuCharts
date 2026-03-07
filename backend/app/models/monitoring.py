@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
@@ -60,3 +61,32 @@ class MonitoringActivityLogsResponse(BaseModel):
 class MonitoringActivityLogsQuery(BaseModel):
     user_id: UUID | None = None
     limit: int = Field(default=100, ge=1, le=500)
+
+
+class MonitoringQueryLogItem(BaseModel):
+    id: UUID
+    user_id: UUID
+    full_name: str
+    email: str
+    query_type: Literal["chatbot", "visualization"]
+    query_text: str
+    created_at: datetime
+
+
+class MonitoringQueryLogsResponse(BaseModel):
+    total: int
+    items: list[MonitoringQueryLogItem]
+
+
+class MonitoringMapPoint(BaseModel):
+    country_code: str
+    latitude: float
+    longitude: float
+    current_users: int
+    active_users: int
+
+
+class MonitoringMapResponse(BaseModel):
+    current_users: int
+    active_users: int
+    points: list[MonitoringMapPoint]

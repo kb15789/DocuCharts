@@ -1,22 +1,65 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-import { fetchDocumentData, fetchDocuments } from "../api/documents";
-import ChartBuilder from "../components/ChartBuilder";
+import { fetchDocuments, generateAIInsights } from "../api/documents";
 import { DOCUMENTS_UPDATED_EVENT } from "../utils/documentsEvents";
 
-function isNumericColumn(rows, key) {
-  return rows.length > 0 && rows.some((row) => Number.isFinite(Number(row[key])));
+function renderChart(chart) {
+  if (chart.chart_type === "line") {
+    return (
+      <LineChart data={chart.data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="x" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey="value" stroke="#1570ef" strokeWidth={3} />
+      </LineChart>
+    );
+  }
+
+  if (chart.chart_type === "pie") {
+    return (
+      <PieChart>
+        <Tooltip />
+        <Legend />
+        <Pie data={chart.data} dataKey="value" nameKey="x" fill="#1570ef" />
+      </PieChart>
+    );
+  }
+
+  return (
+    <BarChart data={chart.data}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="x" />
+      <YAxis />
+      <Tooltip />
+      <Legend />
+      <Bar dataKey="value" fill="#1570ef" radius={[6, 6, 0, 0]} />
+    </BarChart>
+  );
 }
 
 export default function VisualizationsPage() {
   const [documents, setDocuments] = useState([]);
   const [selectedDocumentIds, setSelectedDocumentIds] = useState([]);
-  const [dataset, setDataset] = useState([]);
-  const [columns, setColumns] = useState([]);
-
-  const [chartType, setChartType] = useState("bar");
-  const [xAxis, setXAxis] = useState("");
-  const [yAxis, setYAxis] = useState("");
+  const [customPrompt, setCustomPrompt] = useState("");
+  const [insightsLoading, setInsightsLoading] = useState(false);
+  const [insightsError, setInsightsError] = useState("");
+  const [insightsResult, setInsightsResult] = useState(null);
 
   useEffect(() => {
     async function loadDocuments() {
@@ -38,53 +81,26 @@ export default function VisualizationsPage() {
     return () => window.removeEventListener(DOCUMENTS_UPDATED_EVENT, handleDocumentsUpdated);
   }, []);
 
-  useEffect(() => {
-    async function loadData() {
-      if (!selectedDocumentIds.length) {
-        setDataset([]);
-        setColumns([]);
-        setXAxis("");
-        setYAxis("");
-        return;
-      }
-
-      const data = await fetchDocumentData(selectedDocumentIds);
-      const rows = data.rows || [];
-      const keys = data.columns || [];
-      setDataset(rows);
-      setColumns(keys);
-
-      if (keys.length) {
-        setXAxis(keys[0]);
-        const numeric = keys.find((key) => isNumericColumn(rows, key));
-        setYAxis(numeric || keys[Math.min(1, keys.length - 1)]);
-      }
+  async function onGenerateInsights() {
+    if (!selectedDocumentIds.length) return;
+    setInsightsLoading(true);
+    setInsightsError("");
+    try {
+      const result = await generateAIInsights(selectedDocumentIds, customPrompt);
+      setInsightsResult(result);
+    } catch (error) {
+      setInsightsResult(null);
+      setInsightsError(error?.response?.data?.detail || "Failed to generate insights.");
+    } finally {
+      setInsightsLoading(false);
     }
-
-    loadData().catch(() => {
-      setDataset([]);
-      setColumns([]);
-    });
-  }, [selectedDocumentIds]);
-
-  const normalizedData = useMemo(
-    () =>
-      dataset.map((row) => {
-        const copy = { ...row };
-        if (yAxis) {
-          const numeric = Number(copy[yAxis]);
-          copy[yAxis] = Number.isFinite(numeric) ? numeric : 0;
-        }
-        return copy;
-      }),
-    [dataset, yAxis]
-  );
+  }
 
   return (
     <div className="grid-layout">
       <section className="card">
         <h3>Select Documents</h3>
-        <p className="table-note">Choose uploaded documents before building charts.</p>
+        <p className="table-note">Choose uploaded documents, add optional prompt, then click Generate Insights.</p>
         <select
           className="input"
           multiple
@@ -100,23 +116,86 @@ export default function VisualizationsPage() {
             </option>
           ))}
         </select>
+
+        <label style={{ display: "block", marginTop: 12 }}>
+          Custom Chart Prompt (Optional)
+          <textarea
+            className="input"
+            rows={4}
+            value={customPrompt}
+            onChange={(event) => setCustomPrompt(event.target.value)}
+            placeholder="Example: Focus on revenue growth trends, show region split, and highlight anomalies."
+          />
+        </label>
+
+        <div style={{ marginTop: 12 }}>
+          <button
+            className="primary-btn"
+            type="button"
+            onClick={onGenerateInsights}
+            disabled={insightsLoading || !selectedDocumentIds.length}
+          >
+            {insightsLoading ? "Generating..." : "Generate Insights"}
+          </button>
+        </div>
       </section>
 
-      {columns.length > 0 ? (
-        <ChartBuilder
-          dataset={normalizedData}
-          chartType={chartType}
-          onChartTypeChange={setChartType}
-          xAxis={xAxis}
-          yAxis={yAxis}
-          onAxisChange={(axis, value) => {
-            if (axis === "x") setXAxis(value);
-            if (axis === "y") setYAxis(value);
-          }}
-        />
+      {insightsError && (
+        <section className="card">
+          <p className="error-text">{insightsError}</p>
+        </section>
+      )}
+
+      {insightsResult ? (
+        <>
+          <section className="card">
+            <h3>Top Insight</h3>
+            <p>{insightsResult.top_insight}</p>
+            {insightsResult.key_insights?.length > 0 && (
+              <>
+                <h4>Key Insights</h4>
+                <ul className="clean-list">
+                  {insightsResult.key_insights.map((insight) => (
+                    <li key={insight}>{insight}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </section>
+
+          <section className="card">
+            <h3>Charts Generated</h3>
+            <ul className="clean-list">
+              {(insightsResult.charts || []).map((chart) => (
+                <li key={`${chart.chart_type}-${chart.title}`}>
+                  {chart.title} ({chart.chart_type.toUpperCase()})
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="insights-charts-grid">
+            {(insightsResult.charts || []).map((chart) => (
+              <article className="card" key={`${chart.title}-${chart.chart_type}`}>
+                <h3>{chart.title}</h3>
+                <p className="table-note">
+                  {chart.chart_type.toUpperCase()} | X: {chart.x_axis}
+                  {chart.y_axis ? ` | Y: ${chart.y_axis}` : ""}
+                </p>
+                <div className="chart-wrapper">
+                  <ResponsiveContainer width="100%" height="100%">
+                    {renderChart(chart)}
+                  </ResponsiveContainer>
+                </div>
+              </article>
+            ))}
+          </section>
+        </>
       ) : (
         <section className="card">
-          <p className="table-note">No chartable dataset found for selected documents.</p>
+          <p className="table-note">
+            Generate Insights to let DocuCharts automatically detect columns, create charts, and summarize findings.
+          </p>
         </section>
       )}
     </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
+import { pingPresence } from "../api/auth";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
@@ -21,6 +22,44 @@ export default function Layout() {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("docucharts_theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    function detectCountryCode() {
+      const language = navigator.language || "";
+      const region = language.split("-")[1];
+      return region && region.length === 2 ? region.toUpperCase() : "US";
+    }
+
+    const payload = {
+      country_code: detectCountryCode(),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+    };
+
+    async function sendPresence() {
+      const token = localStorage.getItem("docucharts_token");
+      if (!token) return;
+      try {
+        await pingPresence(payload);
+      } catch {
+        // Ignore heartbeat failures.
+      }
+    }
+
+    sendPresence();
+    const intervalId = window.setInterval(sendPresence, 60 * 1000);
+
+    function onVisible() {
+      if (document.visibilityState === "visible") {
+        sendPresence();
+      }
+    }
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, []);
 
   function toggleTheme() {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));

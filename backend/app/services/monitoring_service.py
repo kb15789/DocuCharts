@@ -2,6 +2,20 @@ from datetime import datetime, timedelta, timezone
 
 from app.database.supabase_client import supabase
 
+COUNTRY_COORDS = {
+    "US": {"lat": 37.0902, "lon": -95.7129},
+    "IN": {"lat": 20.5937, "lon": 78.9629},
+    "GB": {"lat": 55.3781, "lon": -3.4360},
+    "DE": {"lat": 51.1657, "lon": 10.4515},
+    "FR": {"lat": 46.2276, "lon": 2.2137},
+    "CA": {"lat": 56.1304, "lon": -106.3468},
+    "BR": {"lat": -14.2350, "lon": -51.9253},
+    "AU": {"lat": -25.2744, "lon": 133.7751},
+    "SG": {"lat": 1.3521, "lon": 103.8198},
+    "JP": {"lat": 36.2048, "lon": 138.2529},
+    "AE": {"lat": 23.4241, "lon": 53.8478},
+}
+
 
 def _period_config(period: str) -> tuple[timedelta, timedelta, str]:
     if period == "day":
@@ -167,3 +181,112 @@ async def get_activity_logs_for_monitoring(user_id: str | None, limit: int) -> d
         )
 
     return {"total": len(items), "items": items}
+
+
+async def get_query_logs_for_monitoring(
+    user_id: str | None,
+    query_type: str | None,
+    date_from: str | None,
+    date_to: str | None,
+    limit: int,
+) -> dict:
+    query = (
+        supabase.table("user_query_logs")
+        .select("id, user_id, query_type, query_text, created_at")
+        .order("created_at", desc=True)
+        .limit(limit)
+    )
+    if user_id:
+        query = query.eq("user_id", user_id)
+    if query_type:
+        query = query.eq("query_type", query_type)
+    if date_from:
+        query = query.gte("created_at", date_from)
+    if date_to:
+        query = query.lte("created_at", date_to)
+
+    rows = query.execute().data or []
+    if not rows:
+        return {"total": 0, "items": []}
+
+    user_ids = list({row["user_id"] for row in rows})
+    users = (
+        supabase.table("users")
+        .select("id, full_name, email")
+        .in_("id", user_ids)
+        .execute()
+    ).data or []
+    users_map = {u["id"]: u for u in users}
+
+    items = []
+    for row in rows:
+        user = users_map.get(row["user_id"], {})
+        items.append(
+            {
+                "id": row["id"],
+                "user_id": row["user_id"],
+                "full_name": user.get("full_name", "Unknown User"),
+                "email": user.get("email", "unknown@example.com"),
+                "query_type": row.get("query_type", "chatbot"),
+                "query_text": row.get("query_text", ""),
+                "created_at": row["created_at"],
+            }
+        )
+
+    return {"total": len(items), "items": items}
+
+
+async def get_map_metrics_for_monitoring() -> dict:
+    now = datetime.now(timezone.utc)
+    current_cutoff = now - timedelta(minutes=5)
+    active_cutoff = now - timedelta(minutes=30)
+
+    rows = (
+        supabase.table("user_presence")
+        .select("user_id, country_code, last_seen_at")
+        .gte("last_seen_at", active_cutoff.isoformat())
+        .execute()
+    ).data or []
+
+    current_users = set()
+    active_users = set()
+    per_country: dict[str, dict] = {}
+
+    for row in rows:
+        user_id = row.get("user_id")
+        seen_raw = row.get("last_seen_at")
+        if not user_id or not seen_raw:
+            continue
+
+        seen_at = datetime.fromisoformat(seen_raw.replace("Z", "+00:00"))
+        country = (row.get("country_code") or "US").upper()
+
+        bucket = per_country.setdefault(country, {"current_users": set(), "active_users": set()})
+        if seen_at >= active_cutoff:
+            active_users.add(user_id)
+            bucket["active_users"].add(user_id)
+        if seen_at >= current_cutoff:
+            current_users.add(user_id)
+            bucket["current_users"].add(user_id)
+
+    points = []
+    for country, counts in per_country.items():
+        coords = COUNTRY_COORDS.get(country)
+        if not coords:
+            continue
+        points.append(
+            {
+                "country_code": country,
+                "latitude": coords["lat"],
+                "longitude": coords["lon"],
+                "current_users": len(counts["current_users"]),
+                "active_users": len(counts["active_users"]),
+            }
+        )
+
+    points.sort(key=lambda item: item["active_users"], reverse=True)
+    return {
+        "current_users": len(current_users),
+        "active_users": len(active_users),
+        "points": points,
+    }

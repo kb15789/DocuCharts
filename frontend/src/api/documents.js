@@ -22,6 +22,14 @@ export async function fetchDocumentData(documentIds) {
   return data;
 }
 
+export async function generateAIInsights(documentIds, customPrompt = "") {
+  const { data } = await apiClient.post("/documents/ai-insights", {
+    document_ids: documentIds,
+    custom_prompt: customPrompt || null,
+  });
+  return data;
+}
+
 export async function deleteDocument(documentId) {
   await apiClient.delete(`/documents/${documentId}`);
 }
