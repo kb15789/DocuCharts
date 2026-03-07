@@ -1,23 +1,13 @@
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.routers import auth, chat, documents
-from app.services.auth_service import ensure_dummy_user
-
-
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    await ensure_dummy_user()
-    yield
 
 
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    lifespan=lifespan,
 )
 
 allowed_origins = [origin.strip() for origin in settings.allowed_origins.split(",") if origin.strip()]

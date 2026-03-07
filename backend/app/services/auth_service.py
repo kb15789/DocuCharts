@@ -6,43 +6,6 @@ from app.database.supabase_client import supabase
 from app.utils.security import hash_password, verify_password
 
 
-DUMMY_USER = {
-    "full_name": "Demo User",
-    "email": "demo@docucharts.ai",
-    "password": "Demo@12345",
-}
-
-
-async def ensure_dummy_user() -> None:
-    existing = (
-        supabase.table("users")
-        .select("id")
-        .eq("email", DUMMY_USER["email"])
-        .limit(1)
-        .execute()
-    )
-    if existing.data:
-        # Keep dummy credentials deterministic across restarts and migrate
-        # old hashes to the current configured algorithm.
-        supabase.table("users").update(
-            {
-                "full_name": DUMMY_USER["full_name"],
-                "password_hash": hash_password(DUMMY_USER["password"]),
-            }
-        ).eq("id", existing.data[0]["id"]).execute()
-        return
-
-    supabase.table("users").insert(
-        {
-            "id": str(uuid4()),
-            "full_name": DUMMY_USER["full_name"],
-            "email": DUMMY_USER["email"],
-            "password_hash": hash_password(DUMMY_USER["password"]),
-            "chat_assistant_enabled": False,
-        }
-    ).execute()
-
-
 async def get_user_by_email(email: str) -> dict[str, Any] | None:
     response = (
         supabase.table("users")

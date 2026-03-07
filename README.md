@@ -47,9 +47,6 @@ DocuCharts/
 - Password hashing with `passlib` (`pbkdf2_sha256`)
 - JWT token-based authentication
 - Frontend Login and Signup pages
-- Dummy user auto-created at backend startup:
-  - Email: `demo@docucharts.ai`
-  - Password: `Demo@12345`
 
 2. Document Upload
 - Multiple document upload from React UI
