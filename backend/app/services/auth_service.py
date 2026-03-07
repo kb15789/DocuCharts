@@ -38,7 +38,7 @@ async def ensure_dummy_user() -> None:
             "full_name": DUMMY_USER["full_name"],
             "email": DUMMY_USER["email"],
             "password_hash": hash_password(DUMMY_USER["password"]),
-            "chat_assistant_enabled": True,
+            "chat_assistant_enabled": False,
         }
     ).execute()
 
@@ -75,7 +75,7 @@ async def create_user(full_name: str, email: str, password: str) -> dict[str, An
         "full_name": full_name,
         "email": email,
         "password_hash": hash_password(password),
-        "chat_assistant_enabled": True,
+        "chat_assistant_enabled": False,
     }
     response = (
         supabase.table("users")
@@ -91,7 +91,7 @@ async def generate_unique_email(full_name: str) -> str:
         local = "user"
 
     while True:
-        candidate = f"{local}.{uuid4().hex[:8]}@docucharts.local"
+        candidate = f"{local}.{uuid4().hex[:8]}@docucharts.ai"
         existing = await get_user_by_email(candidate)
         if not existing:
             return candidate

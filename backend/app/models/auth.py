@@ -18,7 +18,7 @@ class UserResponse(BaseModel):
     id: UUID
     full_name: str
     email: EmailStr
-    chat_assistant_enabled: bool = True
+    chat_assistant_enabled: bool = False
     created_at: datetime
 
 
