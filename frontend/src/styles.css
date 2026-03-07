@@ -428,6 +428,12 @@ select[multiple] {
   height: 380px;
 }
 
+.insights-charts-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
 .monitoring-header {
   display: flex;
   justify-content: space-between;

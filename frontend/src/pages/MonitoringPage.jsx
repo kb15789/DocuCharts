@@ -12,6 +12,7 @@ import {
 
 import {
   fetchMonitoringActivityLogs,
+  fetchMonitoringQueryLogs,
   fetchMonitoringUsage,
   fetchMonitoringUsers,
   updateMonitoringUserFlags,
@@ -36,6 +37,13 @@ export default function MonitoringPage() {
   const [activityLimit, setActivityLimit] = useState(100);
   const [loadingUsage, setLoadingUsage] = useState(false);
   const [loadingLogs, setLoadingLogs] = useState(false);
+  const [queryLogs, setQueryLogs] = useState({ total: 0, items: [] });
+  const [queryUserId, setQueryUserId] = useState("");
+  const [queryType, setQueryType] = useState("");
+  const [queryDateFrom, setQueryDateFrom] = useState("");
+  const [queryDateTo, setQueryDateTo] = useState("");
+  const [queryLimit, setQueryLimit] = useState(100);
+  const [loadingQueryLogs, setLoadingQueryLogs] = useState(false);
 
   useEffect(() => {
     async function loadUsers() {
@@ -86,6 +94,31 @@ export default function MonitoringPage() {
     }
   }, [activeTab]);
 
+  async function loadQueryLogs() {
+    setLoadingQueryLogs(true);
+    try {
+      const data = await fetchMonitoringQueryLogs({
+        userId: queryUserId,
+        queryType,
+        dateFrom: queryDateFrom ? `${queryDateFrom}T00:00:00Z` : "",
+        dateTo: queryDateTo ? `${queryDateTo}T23:59:59Z` : "",
+        limit: queryLimit,
+      });
+      setQueryLogs(data);
+    } finally {
+      setLoadingQueryLogs(false);
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === "queries") {
+      loadQueryLogs().catch(() => {
+        setQueryLogs({ total: 0, items: [] });
+        setLoadingQueryLogs(false);
+      });
+    }
+  }, [activeTab]);
+
   async function toggleUserFlag(user, key) {
     setUpdatingUserId(user.id);
     try {
@@ -122,6 +155,13 @@ export default function MonitoringPage() {
             onClick={() => setActiveTab("activity")}
           >
             Activity Logs
+          </button>
+          <button
+            type="button"
+            className={activeTab === "queries" ? "period-btn period-btn-active" : "period-btn"}
+            onClick={() => setActiveTab("queries")}
+          >
+            Query Logs
           </button>
           <button
             type="button"
@@ -229,6 +269,80 @@ export default function MonitoringPage() {
             </tbody>
           </table>
           {loadingLogs && <p className="table-note">Loading activity logs...</p>}
+        </section>
+      )}
+
+      {activeTab === "queries" && (
+        <section className="card">
+          <div className="monitoring-toolbar">
+            <h3>Chatbot and Visualization Queries</h3>
+            <div className="activity-filters">
+              <select value={queryUserId} onChange={(e) => setQueryUserId(e.target.value)}>
+                <option value="">All Users</option>
+                {userOptions.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.label}
+                  </option>
+                ))}
+              </select>
+              <select value={queryType} onChange={(e) => setQueryType(e.target.value)}>
+                <option value="">All Types</option>
+                <option value="chatbot">Chatbot</option>
+                <option value="visualization">Visualization</option>
+              </select>
+              <input
+                className="input"
+                style={{ minWidth: 160, marginTop: 0 }}
+                type="date"
+                value={queryDateFrom}
+                onChange={(e) => setQueryDateFrom(e.target.value)}
+              />
+              <input
+                className="input"
+                style={{ minWidth: 160, marginTop: 0 }}
+                type="date"
+                value={queryDateTo}
+                onChange={(e) => setQueryDateTo(e.target.value)}
+              />
+              <select value={queryLimit} onChange={(e) => setQueryLimit(Number(e.target.value))}>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+                <option value={500}>500</option>
+              </select>
+              <button type="button" className="ghost-btn" onClick={loadQueryLogs}>
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          <p className="table-note">
+            Showing {queryLogs.items.length} of {queryLogs.total} query logs.
+          </p>
+
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>User</th>
+                <th>Email</th>
+                <th>Type</th>
+                <th>Query</th>
+              </tr>
+            </thead>
+            <tbody>
+              {queryLogs.items.map((log) => (
+                <tr key={log.id}>
+                  <td>{new Date(log.created_at).toLocaleString()}</td>
+                  <td>{log.full_name}</td>
+                  <td>{log.email}</td>
+                  <td>{log.query_type}</td>
+                  <td>{log.query_text}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {loadingQueryLogs && <p className="table-note">Loading query logs...</p>}
         </section>
       )}
 

@@ -71,6 +71,21 @@ create table if not exists public.user_activity_logs (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.user_query_logs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  query_type text not null check (query_type in ('chatbot', 'visualization')),
+  query_text text not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.user_presence (
+  user_id uuid primary key references public.users(id) on delete cascade,
+  country_code text not null default 'US',
+  timezone text,
+  last_seen_at timestamptz not null default now()
+);
+
 -- Idempotent migration support for existing projects.
 alter table public.documents add column if not exists file_type text;
 alter table public.documents add column if not exists parse_status text;
@@ -115,6 +130,11 @@ begin
 end $$;
 
 alter table public.user_activity_logs add column if not exists action text;
+alter table public.user_query_logs add column if not exists query_type text;
+alter table public.user_query_logs add column if not exists query_text text;
+alter table public.user_presence add column if not exists country_code text not null default 'US';
+alter table public.user_presence add column if not exists timezone text;
+alter table public.user_presence add column if not exists last_seen_at timestamptz not null default now();
 
 create unique index if not exists idx_users_username_unique on public.users (username);
 create index if not exists idx_documents_user_id on public.documents(user_id);
@@ -123,3 +143,8 @@ create index if not exists idx_login_events_user_id on public.login_events(user_
 create index if not exists idx_login_events_created_at on public.login_events(created_at);
 create index if not exists idx_user_activity_logs_user_id on public.user_activity_logs(user_id);
 create index if not exists idx_user_activity_logs_created_at on public.user_activity_logs(created_at);
+create index if not exists idx_user_query_logs_user_id on public.user_query_logs(user_id);
+create index if not exists idx_user_query_logs_type on public.user_query_logs(query_type);
+create index if not exists idx_user_query_logs_created_at on public.user_query_logs(created_at);
+create index if not exists idx_user_presence_last_seen_at on public.user_presence(last_seen_at);
+create index if not exists idx_user_presence_country_code on public.user_presence(country_code);

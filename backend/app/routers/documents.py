@@ -3,6 +3,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from app.models.documents import (
+    AIInsightsRequest,
+    AIInsightsResponse,
     DocumentDataRequest,
     DocumentDataResponse,
     DocumentResponse,
@@ -14,7 +16,8 @@ from app.services.document_service import (
     get_user_documents,
     save_document_metadata,
 )
-from app.services.activity_service import record_user_activity_log
+from app.services.visualization_service import generate_ai_insights
+from app.services.activity_service import record_user_activity_log, record_user_query_log
 from app.utils.deps import get_current_user
 
 
@@ -49,6 +52,25 @@ async def fetch_document_data(
     )
     await record_user_activity_log(current_user["id"], "documents_data_view")
     return DocumentDataResponse(**data)
+
+
+@router.post("/ai-insights", response_model=AIInsightsResponse)
+async def fetch_ai_insights(
+    payload: AIInsightsRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    insights = await generate_ai_insights(
+        current_user["id"],
+        [str(doc_id) for doc_id in payload.document_ids],
+        payload.custom_prompt,
+    )
+    await record_user_query_log(
+        current_user["id"],
+        "visualization",
+        payload.custom_prompt or "Auto insights generation",
+    )
+    await record_user_activity_log(current_user["id"], "ai_insights_generate")
+    return AIInsightsResponse(**insights)
 
 
 @router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)

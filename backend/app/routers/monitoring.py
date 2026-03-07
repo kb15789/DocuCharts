@@ -4,12 +4,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.models.monitoring import (
     MonitoringActivityLogsResponse,
+    MonitoringMapResponse,
+    MonitoringQueryLogsResponse,
     MonitoringUsageResponse,
     MonitoringUserFlagsUpdateRequest,
     MonitoringUserItem,
 )
 from app.services.monitoring_service import (
     get_activity_logs_for_monitoring,
+    get_map_metrics_for_monitoring,
+    get_query_logs_for_monitoring,
     get_usage_timeseries,
     get_users_for_monitoring,
     update_user_flags,
@@ -37,6 +41,12 @@ async def monitoring_usage(
     return MonitoringUsageResponse(**(await get_usage_timeseries(period)))
 
 
+@router.get("/map", response_model=MonitoringMapResponse)
+async def monitoring_map(current_user: dict = Depends(get_current_user)):
+    _ensure_monitoring_access(current_user)
+    return MonitoringMapResponse(**(await get_map_metrics_for_monitoring()))
+
+
 @router.get("/activity-logs", response_model=MonitoringActivityLogsResponse)
 async def monitoring_activity_logs(
     user_id: UUID | None = Query(default=None),
@@ -46,6 +56,26 @@ async def monitoring_activity_logs(
     _ensure_monitoring_access(current_user)
     logs = await get_activity_logs_for_monitoring(str(user_id) if user_id else None, limit)
     return MonitoringActivityLogsResponse(**logs)
+
+
+@router.get("/query-logs", response_model=MonitoringQueryLogsResponse)
+async def monitoring_query_logs(
+    user_id: UUID | None = Query(default=None),
+    query_type: str | None = Query(default=None, pattern="^(chatbot|visualization)$"),
+    date_from: str | None = Query(default=None),
+    date_to: str | None = Query(default=None),
+    limit: int = Query(default=100, ge=1, le=500),
+    current_user: dict = Depends(get_current_user),
+):
+    _ensure_monitoring_access(current_user)
+    logs = await get_query_logs_for_monitoring(
+        str(user_id) if user_id else None,
+        query_type,
+        date_from,
+        date_to,
+        limit,
+    )
+    return MonitoringQueryLogsResponse(**logs)
 
 
 @router.get("/users", response_model=list[MonitoringUserItem])

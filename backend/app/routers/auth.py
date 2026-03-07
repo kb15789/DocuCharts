@@ -1,12 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.models.auth import TokenResponse, UserLoginRequest, UserResponse, UserSignupRequest
+from app.models.auth import (
+    PresencePingRequest,
+    TokenResponse,
+    UserLoginRequest,
+    UserResponse,
+    UserSignupRequest,
+)
 from app.services.auth_service import (
     authenticate_user,
     create_user,
     get_user_by_username,
     normalize_username,
     record_login_event,
+    upsert_user_presence,
 )
 from app.services.activity_service import record_user_activity_log
 from app.utils.deps import get_current_user
@@ -84,3 +91,16 @@ async def me(current_user: dict = Depends(get_current_user)):
         monitoring_dashboard_enabled=current_user.get("monitoring_dashboard_enabled", False),
         created_at=current_user["created_at"],
     )
+
+
+@router.post("/presence")
+async def presence_ping(
+    payload: PresencePingRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    await upsert_user_presence(
+        current_user["id"],
+        payload.country_code,
+        payload.timezone,
+    )
+    return {"status": "ok"}
