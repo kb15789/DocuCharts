@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
 import Sidebar from "./Sidebar";
@@ -13,12 +14,27 @@ const pageMeta = {
 export default function Layout() {
   const location = useLocation();
   const meta = pageMeta[location.pathname] ?? pageMeta["/upload"];
+  const [theme, setTheme] = useState(() => localStorage.getItem("docucharts_theme") || "light");
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("docucharts_theme", theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  }
 
   return (
     <div className="app-shell">
       <Sidebar />
       <main className="main-area">
-        <Topbar title={meta.title} subtitle={meta.subtitle} />
+        <Topbar
+          title={meta.title}
+          subtitle={meta.subtitle}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
         <section className="page-container">
           <Outlet />
         </section>
