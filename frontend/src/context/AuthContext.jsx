@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
     return {
       ...rawUser,
       chat_assistant_enabled:
-        rawUser.chat_assistant_enabled === undefined ? true : rawUser.chat_assistant_enabled,
+        rawUser.chat_assistant_enabled === undefined ? false : rawUser.chat_assistant_enabled,
     };
   }
 

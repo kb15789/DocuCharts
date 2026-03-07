@@ -13,7 +13,7 @@ async def chatbot_query(
     payload: ChatQueryRequest,
     current_user: dict = Depends(get_current_user),
 ):
-    if not current_user.get("chat_assistant_enabled", True):
+    if not current_user.get("chat_assistant_enabled", False):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Chat assistant is disabled for this account.",
@@ -27,7 +27,7 @@ async def chatbot_query(
 
 @router.get("/history", response_model=list[ChatHistoryItem])
 async def chat_history(current_user: dict = Depends(get_current_user)):
-    if not current_user.get("chat_assistant_enabled", True):
+    if not current_user.get("chat_assistant_enabled", False):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Chat assistant is disabled for this account.",

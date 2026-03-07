@@ -6,7 +6,7 @@ create table if not exists public.users (
   full_name text not null,
   email text unique not null,
   password_hash text not null,
-  chat_assistant_enabled boolean not null default true,
+  chat_assistant_enabled boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -38,7 +38,8 @@ alter table public.documents add column if not exists row_count int not null def
 alter table public.documents add column if not exists parsed_columns jsonb not null default '[]'::jsonb;
 alter table public.documents add column if not exists parsed_rows jsonb not null default '[]'::jsonb;
 alter table public.chat_history add column if not exists document_ids uuid[] not null default '{}'::uuid[];
-alter table public.users add column if not exists chat_assistant_enabled boolean not null default true;
+alter table public.users add column if not exists chat_assistant_enabled boolean not null default false;
 
 create index if not exists idx_documents_user_id on public.documents(user_id);
 create index if not exists idx_chat_history_user_id on public.chat_history(user_id);
+alter table public.users alter column chat_assistant_enabled set default false;

@@ -41,7 +41,7 @@ async def login(payload: UserLoginRequest):
             id=user["id"],
             full_name=user["full_name"],
             email=user["email"],
-            chat_assistant_enabled=user.get("chat_assistant_enabled", True),
+            chat_assistant_enabled=user.get("chat_assistant_enabled", False),
             created_at=user["created_at"],
         ),
     )
@@ -53,6 +53,6 @@ async def me(current_user: dict = Depends(get_current_user)):
         id=current_user["id"],
         full_name=current_user["full_name"],
         email=current_user["email"],
-        chat_assistant_enabled=current_user.get("chat_assistant_enabled", True),
+        chat_assistant_enabled=current_user.get("chat_assistant_enabled", False),
         created_at=current_user["created_at"],
     )
