@@ -22,6 +22,11 @@ export async function fetchDocumentData(documentIds) {
   return data;
 }
 
+export async function joinDocumentData(payload) {
+  const { data } = await apiClient.post("/documents/join", payload);
+  return data;
+}
+
 export async function generateAIInsights(documentIds, customPrompt = "") {
   const { data } = await apiClient.post("/documents/ai-insights", {
     document_ids: documentIds,

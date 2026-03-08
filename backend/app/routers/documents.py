@@ -7,11 +7,13 @@ from app.models.documents import (
     AIInsightsResponse,
     DocumentDataRequest,
     DocumentDataResponse,
+    DocumentJoinRequest,
     DocumentResponse,
     UploadSummaryResponse,
 )
 from app.services.document_service import (
     delete_user_document,
+    get_joined_document_data,
     get_merged_document_data,
     get_user_documents,
     save_document_metadata,
@@ -51,6 +53,29 @@ async def fetch_document_data(
         current_user["id"], [str(doc_id) for doc_id in payload.document_ids]
     )
     await record_user_activity_log(current_user["id"], "documents_data_view")
+    return DocumentDataResponse(**data)
+
+
+@router.post("/join", response_model=DocumentDataResponse)
+async def join_document_data(
+    payload: DocumentJoinRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    if payload.left_document_id == payload.right_document_id:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Please select two different documents to join.",
+        )
+
+    data = await get_joined_document_data(
+        current_user["id"],
+        str(payload.left_document_id),
+        str(payload.right_document_id),
+        payload.left_column,
+        payload.right_column,
+        payload.join_type,
+    )
+    await record_user_activity_log(current_user["id"], f"documents_join_{payload.join_type}")
     return DocumentDataResponse(**data)
 
 

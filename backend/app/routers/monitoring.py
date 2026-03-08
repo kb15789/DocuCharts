@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -62,17 +63,31 @@ async def monitoring_activity_logs(
 async def monitoring_query_logs(
     user_id: UUID | None = Query(default=None),
     query_type: str | None = Query(default=None, pattern="^(chatbot|visualization)$"),
-    date_from: str | None = Query(default=None),
-    date_to: str | None = Query(default=None),
+    date_from: datetime | None = Query(default=None),
+    date_to: datetime | None = Query(default=None),
     limit: int = Query(default=100, ge=1, le=500),
     current_user: dict = Depends(get_current_user),
 ):
     _ensure_monitoring_access(current_user)
+
+    if date_from and date_to and date_from > date_to:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="date_from cannot be greater than date_to",
+        )
+
+    def _to_utc_iso(value: datetime | None) -> str | None:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc).isoformat()
+        return value.astimezone(timezone.utc).isoformat()
+
     logs = await get_query_logs_for_monitoring(
         str(user_id) if user_id else None,
         query_type,
-        date_from,
-        date_to,
+        _to_utc_iso(date_from),
+        _to_utc_iso(date_to),
         limit,
     )
     return MonitoringQueryLogsResponse(**logs)
