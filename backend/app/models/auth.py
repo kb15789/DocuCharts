@@ -5,6 +5,8 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class UserSignupRequest(BaseModel):
+    first_name: str = Field(min_length=1, max_length=80)
+    last_name: str = Field(min_length=1, max_length=80)
     username: str = Field(min_length=3, max_length=40, pattern=r"^[a-zA-Z0-9._-]+$")
     password: str = Field(min_length=8, max_length=128)
 
@@ -12,6 +14,11 @@ class UserSignupRequest(BaseModel):
 class UserLoginRequest(BaseModel):
     login: str = Field(min_length=3, max_length=120)
     password: str = Field(min_length=8, max_length=128)
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(min_length=8, max_length=128)
+    new_password: str = Field(min_length=8, max_length=128)
 
 
 class UserResponse(BaseModel):

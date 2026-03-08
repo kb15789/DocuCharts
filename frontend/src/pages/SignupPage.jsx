@@ -7,7 +7,12 @@ import { useAuth } from "../context/AuthContext";
 export default function SignupPage() {
   const navigate = useNavigate();
   const { handleAuthSuccess } = useAuth();
-  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    username: "",
+    password: "",
+  });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -41,6 +46,26 @@ export default function SignupPage() {
           <p>Your login email will be created as username@docucharts.ai.</p>
 
           <label>
+            First Name
+            <input
+              className="input"
+              value={formData.first_name}
+              onChange={(e) => setFormData((prev) => ({ ...prev, first_name: e.target.value }))}
+              required
+            />
+          </label>
+
+          <label>
+            Last Name
+            <input
+              className="input"
+              value={formData.last_name}
+              onChange={(e) => setFormData((prev) => ({ ...prev, last_name: e.target.value }))}
+              required
+            />
+          </label>
+
+          <label>
             Username
             <input
               className="input"
@@ -70,7 +95,9 @@ export default function SignupPage() {
         </form>
 
         <footer className="auth-footer">
-          <Link to="/about">About</Link>
+          <Link to="/about" state={{ from: "/signup" }}>
+            Learn More
+          </Link>
         </footer>
       </div>
     </div>

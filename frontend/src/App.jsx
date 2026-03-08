@@ -19,6 +19,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/about" element={<AboutPage />} />
       <Route
         path="/"
         element={
@@ -31,7 +32,6 @@ export default function App() {
         <Route path="upload" element={<UploadPage />} />
         <Route path="explorer" element={<DataExplorerPage />} />
         <Route path="visualizations" element={<VisualizationsPage />} />
-        <Route path="about" element={<AboutPage />} />
         <Route
           path="chatbot"
           element={

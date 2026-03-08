@@ -171,6 +171,34 @@ a {
   font-size: 0.85rem;
 }
 
+.sidebar-password-form {
+  display: grid;
+  gap: 8px;
+}
+
+.sidebar-password-form label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.84rem;
+  color: var(--text);
+}
+
+.sidebar-password-form .input {
+  margin-top: 0;
+  padding: 8px 10px;
+}
+
+.sidebar-password-form .primary-btn {
+  width: 100%;
+}
+
+.sidebar-success-text {
+  margin: 0;
+  color: var(--success);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
 .main-area {
   padding: 16px;
   display: grid;
@@ -676,8 +704,10 @@ select[multiple] {
 .login-form-side {
   position: relative;
   display: grid;
-  align-content: center;
-  padding: 24px;
+  grid-template-rows: auto 1fr auto;
+  align-content: stretch;
+  min-height: 100vh;
+  padding: 28px;
 }
 
 .auth-top {
@@ -708,7 +738,14 @@ select[multiple] {
   width: 100%;
   display: grid;
   place-items: center;
-  padding-top: 24px;
+  padding-top: 88px;
+}
+
+.auth-footer-login-page {
+  align-self: end;
+  padding-bottom: 8px;
+  width: 100%;
+  text-align: right;
 }
 
 .auth-stack {
@@ -733,10 +770,10 @@ select[multiple] {
 
 .auth-card-login {
   background: var(--auth-card-bg);
-  width: min(470px, calc(100vw - 48px));
+  width: min(560px, calc(100vw - 56px));
   border-radius: 18px;
-  padding: 28px;
-  gap: 14px;
+  padding: 36px;
+  gap: 16px;
   box-shadow: 0 14px 38px rgba(15, 31, 72, 0.12);
 }
 
@@ -745,6 +782,18 @@ select[multiple] {
   text-align: center;
   font-size: 2.1rem;
   letter-spacing: -0.03em;
+}
+
+.auth-card-login h1 {
+  font-size: 2.55rem;
+}
+
+.auth-card-login p {
+  font-size: 1.1rem;
+}
+
+.auth-card-login label {
+  font-size: 1.02rem;
 }
 
 .auth-card p {
@@ -763,10 +812,21 @@ select[multiple] {
   color: var(--text);
 }
 
+.auth-card-login .input {
+  padding: 14px 16px;
+  font-size: 1rem;
+}
+
 .auth-submit {
   margin-top: 6px;
   padding: 12px 14px;
   font-size: 1rem;
+}
+
+.auth-card-login .auth-submit {
+  margin-top: 8px;
+  padding: 14px 16px;
+  font-size: 1.1rem;
 }
 
 .error-text {
@@ -787,12 +847,28 @@ select[multiple] {
 }
 
 .about-card {
+  position: relative;
   width: min(900px, 96vw);
   display: grid;
   gap: 18px;
   background:
     radial-gradient(circle at top right, rgba(21, 112, 239, 0.08), transparent 42%),
     var(--surface);
+}
+
+.about-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
 }
 
 .about-hero {

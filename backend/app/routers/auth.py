@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.models.auth import (
+    ChangePasswordRequest,
     PresencePingRequest,
     TokenResponse,
     UserLoginRequest,
@@ -9,6 +10,7 @@ from app.models.auth import (
 )
 from app.services.auth_service import (
     authenticate_user,
+    change_user_password,
     create_user,
     get_user_by_username,
     normalize_username,
@@ -35,7 +37,12 @@ async def signup(payload: UserSignupRequest):
         )
 
     try:
-        user = await create_user(normalized_username, payload.password)
+        user = await create_user(
+            normalized_username,
+            payload.password,
+            payload.first_name,
+            payload.last_name,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
 
@@ -104,3 +111,29 @@ async def presence_ping(
         payload.timezone,
     )
     return {"status": "ok"}
+
+
+@router.post("/change-password")
+async def change_password(
+    payload: ChangePasswordRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    if payload.current_password == payload.new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from current password",
+        )
+
+    changed = await change_user_password(
+        current_user["id"],
+        payload.current_password,
+        payload.new_password,
+    )
+    if not changed:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    await record_user_activity_log(current_user["id"], "change_password")
+    return {"message": "Password updated successfully"}
