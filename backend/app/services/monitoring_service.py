@@ -15,6 +15,7 @@ COUNTRY_COORDS = {
     "JP": {"lat": 36.2048, "lon": 138.2529},
     "AE": {"lat": 23.4241, "lon": 53.8478},
 }
+IST_TZ = timezone(timedelta(hours=5, minutes=30))
 
 
 def _period_config(period: str) -> tuple[timedelta, timedelta, str]:
@@ -35,7 +36,7 @@ def _make_buckets(start: datetime, end: datetime, step: timedelta, label_format:
         buckets[key] = {
             "start": cursor,
             "end": cursor + step,
-            "label": cursor.strftime(label_format),
+            "label": cursor.astimezone(IST_TZ).strftime(label_format),
             "unique_users": set(),
             "logins": 0,
         }
