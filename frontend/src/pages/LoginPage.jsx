@@ -40,7 +40,7 @@ export default function LoginPage() {
 
         <section className="login-form-side">
           <header className="auth-top auth-top-login">
-            <strong className="auth-brand">DocAnalytics</strong>
+            <span />
             <p>
               Don&apos;t have an account? <Link to="/signup">Create account</Link>
             </p>
@@ -48,7 +48,7 @@ export default function LoginPage() {
 
           <div className="auth-login-wrap">
             <form className="auth-card auth-card-login" onSubmit={onSubmit}>
-              <h1>Welcome back</h1>
+              <h1>Welcome!</h1>
               <p>Enter your credentials to access your dashboard</p>
 
               <label>
@@ -83,8 +83,10 @@ export default function LoginPage() {
             </form>
           </div>
 
-          <footer className="auth-footer">
-            <Link to="/about">About</Link>
+          <footer className="auth-footer auth-footer-login-page">
+            <Link to="/about" state={{ from: "/login" }}>
+              Learn More
+            </Link>
           </footer>
         </section>
       </div>

@@ -78,7 +78,16 @@ async def get_user_with_password_by_id(user_id: str) -> dict[str, Any] | None:
     return response.data[0]
 
 
-async def create_user(username: str, password: str) -> dict[str, Any]:
+def build_full_name(first_name: str, last_name: str) -> str:
+    cleaned_first = first_name.strip()
+    cleaned_last = last_name.strip()
+    full_name = f"{cleaned_first} {cleaned_last}".strip()
+    if not full_name:
+        raise ValueError("First name and last name are required")
+    return full_name
+
+
+async def create_user(username: str, password: str, first_name: str, last_name: str) -> dict[str, Any]:
     normalized = normalize_username(username)
     if not USERNAME_PATTERN.fullmatch(normalized):
         raise ValueError("Username must be 3-40 chars and contain only letters, numbers, ., _, -")
@@ -86,7 +95,7 @@ async def create_user(username: str, password: str) -> dict[str, Any]:
     payload = {
         "id": str(uuid4()),
         "username": normalized,
-        "full_name": normalized,
+        "full_name": build_full_name(first_name, last_name),
         "email": username_to_email(normalized),
         "password_hash": hash_password(password),
         "is_active": True,

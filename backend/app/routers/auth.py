@@ -37,7 +37,12 @@ async def signup(payload: UserSignupRequest):
         )
 
     try:
-        user = await create_user(normalized_username, payload.password)
+        user = await create_user(
+            normalized_username,
+            payload.password,
+            payload.first_name,
+            payload.last_name,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
 

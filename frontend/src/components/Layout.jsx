@@ -79,7 +79,9 @@ export default function Layout() {
           <Outlet />
         </section>
         <footer className="app-footer">
-          <Link to="/about">About</Link>
+          <Link to="/about" state={{ from: location.pathname }}>
+            Learn More
+          </Link>
         </footer>
       </main>
     </div>

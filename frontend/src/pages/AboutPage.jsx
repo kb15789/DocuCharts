@@ -1,11 +1,29 @@
-import { Link } from "react-router-dom";
+import { X } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import { useAuth } from "../context/AuthContext";
 
 export default function AboutPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  function onClose() {
+    const fromPath = typeof location.state?.from === "string" ? location.state.from : "";
+    const fallback = isAuthenticated ? "/upload" : "/login";
+    const nextPath = isAuthenticated && fromPath && fromPath !== "/about" ? fromPath : fallback;
+    navigate(nextPath);
+  }
+
   return (
     <div className="about-page">
       <section className="card about-card">
+        <button type="button" className="about-close-btn" onClick={onClose} aria-label="Close about page">
+          <X size={18} />
+        </button>
+
         <div className="about-hero">
-          <span className="about-badge">About</span>
+          <span className="about-badge">Learn More</span>
           <h1>Use DocuCharts End-to-End</h1>
           <p>
             Upload your files, explore rows, generate visuals, and ask grounded questions from the same selected
@@ -30,10 +48,6 @@ export default function AboutPage() {
             <h3>Chat Assistant</h3>
             <p>Ask questions against selected docs. Answers are generated from the chosen document context.</p>
           </article>
-          <article className="about-feature">
-            <h3>Monitoring</h3>
-            <p>Track login timeline, activity logs, query logs, and user-level status/feature toggles.</p>
-          </article>
         </div>
 
         <section className="about-quickstart">
@@ -45,15 +59,6 @@ export default function AboutPage() {
             <li>Use Chat Assistant for follow-up questions on those files.</li>
           </ol>
         </section>
-
-        <div className="about-actions">
-          <Link className="primary-btn" to="/upload">
-            Open App
-          </Link>
-          <Link className="ghost-btn" to="/login">
-            Back to Login
-          </Link>
-        </div>
       </section>
     </div>
   );
