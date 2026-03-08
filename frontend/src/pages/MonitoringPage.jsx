@@ -20,6 +20,15 @@ import {
 
 const periods = ["day", "week", "month", "year"];
 
+function formatIstTimestamp(value) {
+  return `${new Date(value).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    dateStyle: "medium",
+    timeStyle: "short",
+    hour12: true,
+  })} IST`;
+}
+
 export default function MonitoringPage() {
   const [activeTab, setActiveTab] = useState("usage");
   const [period, setPeriod] = useState("week");
@@ -188,7 +197,7 @@ export default function MonitoringPage() {
 
           <section className="card">
             <div className="monitoring-toolbar">
-              <h3>Login Timeline ({period})</h3>
+              <h3>Login Timeline ({period}, IST)</h3>
               <div className="period-switcher">
                 {periods.map((value) => (
                   <button
@@ -260,7 +269,7 @@ export default function MonitoringPage() {
             <tbody>
               {activityLogs.items.map((log) => (
                 <tr key={log.id}>
-                  <td>{new Date(log.created_at).toLocaleString()}</td>
+                  <td>{formatIstTimestamp(log.created_at)}</td>
                   <td>{log.full_name}</td>
                   <td>{log.email}</td>
                   <td>{log.action}</td>
@@ -333,7 +342,7 @@ export default function MonitoringPage() {
             <tbody>
               {queryLogs.items.map((log) => (
                 <tr key={log.id}>
-                  <td>{new Date(log.created_at).toLocaleString()}</td>
+                  <td>{formatIstTimestamp(log.created_at)}</td>
                   <td>{log.full_name}</td>
                   <td>{log.email}</td>
                   <td>{log.query_type}</td>
