@@ -29,6 +29,14 @@ class DocumentDataResponse(BaseModel):
     rows: list[dict]
 
 
+class DocumentJoinRequest(BaseModel):
+    left_document_id: UUID
+    right_document_id: UUID
+    left_column: str = Field(min_length=1, max_length=120)
+    right_column: str = Field(min_length=1, max_length=120)
+    join_type: Literal["inner", "left", "right", "full"] = "inner"
+
+
 class AIVisualizationRequest(BaseModel):
     document_ids: list[UUID] = Field(min_length=1)
     x_axis: str
